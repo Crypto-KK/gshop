@@ -309,7 +309,19 @@
 
 <script>
 import HeaderTop from '../../components/HeaderTop/HeaderTop'
+import Swiper from 'swiper'
+import 'swiper/css/swiper.min.css'
 export default {
+  mounted () {
+    // 创建swiper
+    // eslint-disable-next-line no-new
+    new Swiper('.swiper-container', {
+      loop: true,
+      pagination: {
+        el: '.swiper-pagination'
+      }
+    })
+  },
   components: {
     HeaderTop
   }
