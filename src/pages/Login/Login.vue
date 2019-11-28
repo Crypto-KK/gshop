@@ -1,3 +1,4 @@
+<script src="../../main.js"></script>
 <template>
   <section class="loginContainer">
     <div class="loginInner">
@@ -39,7 +40,7 @@
               </section>
               <section class="login_message">
                 <input type="text" maxlength="11" placeholder="验证码" v-model="captcha">
-                <img class="get_verification" src="http://127.0.0.1:4000/captcha" alt="captcha" @click="getCaptcha">
+                <img ref="captcha" class="get_verification" src="http://127.0.0.1:4000/captcha" alt="captcha" @click="getCaptcha">
               </section>
             </section>
           </div>
@@ -57,6 +58,7 @@
 
 <script>
 import AlertTip from '../../components/AlertTip/AlertTip'
+import {reqSendCode, reqSmsLogin, reqPwdLogin} from '../../api'
 export default {
   data () {
     return {
@@ -78,25 +80,35 @@ export default {
     }
   },
   methods: {
-    getCode () {
+    async getCode () {
       if (!this.computeTime) {
         // 启动倒计时
         this.computeTime = 30
-        const intervalID = setInterval(() => {
+        this.intervalID = setInterval(() => {
           this.computeTime -= 1
           if (this.computeTime <= 0) {
             // 停止
-            clearInterval(intervalID)
+            clearInterval(this.intervalID)
           }
         }, 1000)
         // 发送ajax
+        const result = await reqSendCode(this.phone)
+        if (result.code === 1) {
+          // 提示
+          this.showAlertFunc(result.msg)
+          if (this.computeTime) {
+            this.computeTime = 0
+            clearInterval(this.intervalID)
+          }
+        }
       }
     },
     showAlertFunc (alertText) {
       this.alertText = alertText
       this.showAlert = true
     },
-    login () {
+    async login () {
+      let result
       // 前台表单验证
       if (this.loginWay) {
         const {rightPhone, phone, code} = this
@@ -107,6 +119,8 @@ export default {
           // 验证码必须为6位
           this.showAlertFunc('验证码必须为6位')
         }
+        // 登录
+        result = await reqSmsLogin(phone, code)
       } else { // 密码登录
         const {name, pwd, captcha} = this
         if (!name) {
@@ -119,15 +133,34 @@ export default {
           // 验证码
           this.showAlertFunc('验证码')
         }
+        // 登录
+        result = await reqPwdLogin({name, pwd, captcha})
+      }
+      // 停止计时
+      if (this.computeTime) {
+        this.computeTime = 0
+        clearInterval(this.intervalID)
+      }
+      // 根据结果处理
+      if (result.code === 0) {
+        const user = result.data
+        // 将user保存在vuex的state
+        this.$store.dispatch('recordUser', user)
+        // 跳转路由到个人中心
+        this.$router.replace('/profile')
+      } else {
+        const msg = result.msg
+        this.getCaptcha()
+        this.showAlertFunc(msg)
       }
     },
     closeTip () {
       this.alertText = ''
       this.showAlert = false
     },
-    getCaptcha (event) {
+    getCaptcha () {
       // 获取验证码
-      event.target.src = 'http://127.0.0.1:4000/captcha?' + Date.now()
+      this.$refs.captcha.src = 'http://127.0.0.1:4000/captcha?' + Date.now()
     }
   },
   components: {

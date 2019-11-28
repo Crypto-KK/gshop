@@ -1,12 +1,17 @@
 <template>
   <section class="msite">
     <HeaderTop :title="address.name">
-      <span class="header_search" slot="left">
-        <i class="iconfont icon-sousuo"></i>
-      </span>
-      <span class="header_login" slot="right">
-        <span class="header_login_text">登录|注册</span>
-      </span>
+      <router-link class="header_search" slot="left" to="/search">
+        <i class="iconfont icon-sousuo" />
+      </router-link>
+      <router-link class="header_login" slot="right" :to="userInfo._id ? '/userinfo': '/login'">
+        <span class="header_login_text" v-if="!userInfo._id">
+          登录|注册
+        </span>
+        <span class="header_login_text" v-else>
+          <i class="iconfont icon-person" />
+        </span>
+      </router-link>
     </HeaderTop>
     <!--首页导航-->
     <nav class="msite_nav">
@@ -29,7 +34,7 @@
     <!--首页附近商家-->
     <div class="msite_shop_list">
       <div class="shop_header">
-        <i class="iconfont icon-xuanxiang"></i>
+        <i class="iconfont icon-xuanxiang" />
         <span class="shop_header_title">附近商家</span>
       </div>
       <ShopList />
@@ -72,7 +77,7 @@ export default {
     }
   },
   computed: {
-    ...mapState(['address', 'foodTypes']),
+    ...mapState(['address', 'foodTypes', 'userInfo']),
     foodTypesArr () {
       const {foodTypes} = this
       const arr = []
