@@ -1,8 +1,10 @@
 import {
-  RECEIVE_ADDRESS, RECEIVE_FOODTYPES, RECEIVE_SHOPS, RECEIVE_USERINFO, RESET_USERINFO
+  RECEIVE_ADDRESS, RECEIVE_FOODTYPES, RECEIVE_SHOPS, RECEIVE_USERINFO,
+  RESET_USERINFO, RECEIVE_RATINGS, RECEIVE_INFO, RECEIVE_GOODS
 } from './mutation-types'
 import {
-  reqAddress, reqFoodTypes, reqShops, reqUserInfo, reqLogout
+  reqAddress, reqFoodTypes, reqShops, reqUserInfo, reqLogout, reqShopGoods,
+  reqShopInfo, reqShopRatings
 } from '../api'
 export default {
   // 异步获取地址
@@ -51,6 +53,27 @@ export default {
     const result = await reqLogout()
     if (result.code === 0) {
       commit(RESET_USERINFO)
+    }
+  },
+  async getShopInfo ({commit}) {
+    const result = await reqShopInfo()
+    if (result.code === 0) {
+      const info = result.data
+      commit(RECEIVE_INFO, {info})
+    }
+  },
+  async getShopRatings ({commit}) {
+    const result = await reqShopRatings()
+    if (result.code === 0) {
+      const ratings = result.data
+      commit(RECEIVE_RATINGS, {ratings})
+    }
+  },
+  async getShopGoods ({commit}) {
+    const result = await reqShopGoods()
+    if (result.code === 0) {
+      const goods = result.data
+      commit(RECEIVE_GOODS, {goods})
     }
   }
 }
